@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>📊 Admin File Viewer</title>
+    <style>
+        /* ====== GENERAL PAGE STYLING ====== */
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #f2f9ff, #ffffff);
+            margin: 0;
+            padding: 30px;
+            color: #2c3e50;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1d3557;
+            margin-bottom: 25px;
+        }
+
+        /* ====== CONTROL PANEL ====== */
+        .control-panel {
+            background: #f8fbff;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        label {
+            font-weight: 600;
+        }
+
+        input[type="number"] {
+            width: 100px;
+            padding: 6px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        button {
+            background: #3498db;
+            border: none;
+            padding: 8px 15px;
+            color: white;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        button:hover {
+            background: #1d6fa5;
+            transform: translateY(-2px);
+        }
+
+        /* ====== TABLE STYLING ====== */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 10px 12px;
+            text-align: left;
+        }
+
+        th {
+            background: #3498db;
+            color: white;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background: #f8faff;
+        }
+
+        tr:hover {
+            background: #e8f3ff;
+        }
+
+        /* ====== FOOTER ====== */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #777;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>📊 Admin File Viewer - {{ file_type|upper }}</h1>
+
+    <div class="control-panel">
+        <label for="rows">Rows to display:</label>
+        <input type="number" id="rows" value="20" min="1" max="1000">
+        <button onclick="updateRows()">Apply</button>
+    </div>
+
+    <table id="dataTable">
+        <thead>
+            <tr id="tableHead"></tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+
+    <script id="dataScript" type="application/json">
+        {{ data | tojson }}
+    </script>
+
+    <script id="columnsScript" type="application/json">
+        {{ columns | tojson }}
+    </script>
+
+    <script>
+        // ✅ Parse safely from embedded JSON script tags
+        const data = JSON.parse(document.getElementById("dataScript").textContent);
+        const columns = JSON.parse(document.getElementById("columnsScript").textContent);
+
+        const tableHead = document.getElementById("tableHead");
+        const tableBody = document.getElementById("tableBody");
+
+        // Render table header
+        columns.forEach(col => {
+            const th = document.createElement("th");
+            th.textContent = col;
+            tableHead.appendChild(th);
+        });
+
+        function renderTable(limit) {
+            tableBody.innerHTML = "";
+            const slice = data.slice(0, limit);
+            for (let row of slice) {
+                const tr = document.createElement("tr");
+                columns.forEach(col => {
+                    const td = document.createElement("td");
+                    td.textContent = row[col] || "N/A";
+                    tr.appendChild(td);
+                });
+                tableBody.appendChild(tr);
+            }
+        }
+
+        function updateRows() {
+            const limit = parseInt(document.getElementById("rows").value) || 20;
+            renderTable(limit);
+        }
+
+        // Initial render (20 rows)
+        renderTable(20);
+    </script>
+
+    <footer>
+        © {{ current_year or 2025 }} Admin File Viewer | Built with 💙 by Wajid Khanzada
+    </footer>
+</body>
+
+</html>

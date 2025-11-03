@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>K9 Scraper Control Panel 🐾</title>
+    <style>
+        /* === GLOBAL STYLING === */
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #e3f2fd, #f9fbff);
+            color: #2c3e50;
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #0d47a1;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+            letter-spacing: 1px;
+        }
+
+        /* === MAIN PANEL === */
+        .panel {
+            display: grid;
+            gap: 25px;
+            max-width: 950px;
+            margin: 0 auto;
+        }
+
+        /* === CARD DESIGN === */
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
+            padding: 25px;
+            border-radius: 14px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        h3 {
+            margin-top: 0;
+            color: #1565c0;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: 600;
+        }
+
+        /* === INPUTS & SELECTS === */
+        input,
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #cfd8dc;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 8px;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #1976d2;
+        }
+
+        /* === BUTTONS === */
+        button {
+            background: linear-gradient(135deg, #1976d2, #2196f3);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #0d47a1, #1976d2);
+            transform: translateY(-2px);
+        }
+
+        /* === TEXTAREA & JSON DISPLAY === */
+        textarea {
+            width: 100%;
+            height: 200px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 14px;
+            border: 1px solid #cfd8dc;
+            border-radius: 8px;
+            padding: 10px;
+            background: #fafafa;
+        }
+
+        pre {
+            background: #1e1e1e;
+            color: #00e676;
+            padding: 15px;
+            border-radius: 10px;
+            overflow-x: auto;
+            max-height: 300px;
+            font-family: monospace;
+            font-size: 14px;
+            transition: background 0.4s ease;
+        }
+
+        pre.updated {
+            background: #2c2c2c;
+        }
+
+        /* === FOOTER === */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #607d8b;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>K9 Scraper Control Panel 🐾</h1>
+
+    <div class="panel">
+
+        <!-- 🔹 Data Files -->
+        <div class="card">
+            <h3>📂 Data Files</h3>
+            <button onclick="openFile('csv')">Open CSV</button>
+            <button onclick="openFile('xlsx')">Open Excel</button>
+            <button onclick="openFile('json')">Open JSON</button>
+        </div>
+
+        <!-- 🔹 Manual Scrape -->
+        <div class="card">
+            <h3>1️⃣ Manual Scrape</h3>
+            <label>Breed:</label>
+            <select id="breed">
+                <option>Golden Retriever</option>
+                <option>Labrador Retriever</option>
+            </select>
+            <label>Dog Name:</label>
+            <input id="dogName" placeholder="e.g. Buddy">
+            <label>Resume From (optional):</label>
+            <input id="resumeFrom" placeholder="dog name or link">
+            <button onclick="manualScrape()">Start Manual Scrape</button>
+        </div>
+
+        <!-- 🔹 Re-scrape Range -->
+        <div class="card">
+            <h3>2️⃣ Re-scrape Range</h3>
+            <input id="startRow" type="number" placeholder="Start row">
+            <input id="endRow" type="number" placeholder="End row">
+            <button onclick="rescrapeRange()">Re-scrape</button>
+        </div>
+
+        <!-- 🔹 Single Dog Scrape -->
+        <div class="card">
+            <h3>3️⃣ Scrape Single Dog</h3>
+            <input id="dogURL" placeholder="Full dog URL">
+            <button onclick="scrapeSingle()">Scrape</button>
+        </div>
+
+        <!-- 🔹 Logs -->
+        <div class="card">
+            <h3>📝 Logs</h3>
+            <textarea id="output" placeholder="Logs will appear here..." readonly></textarea>
+        </div>
+
+        <!-- 🔹 Live JSON Panel -->
+        <div class="card">
+            <h3>🐕 Live Scraped Dogs (JSON)</h3>
+            <pre id="jsonOutput">No live data yet...</pre>
+            <button onclick="refreshJSON()">Refresh JSON</button>
+        </div>
+
+    </div>
+
+    <footer>© 2025 K9 Scraper Panel | Built with 💙 by Wajid Khanzada</footer>
+
+    <script>
+        async function manualScrape() {
+            const breed = document.getElementById("breed").value;
+            const name = document.getElementById("dogName").value;
+            const resume = document.getElementById("resumeFrom").value;
+
+            const res = await fetch("/manual_scrape", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ breed, name, resume_from: resume })
+            });
+            const data = await res.json();
+            document.getElementById("output").value = JSON.stringify(data, null, 2);
+            refreshJSON();
+        }
+
+        async function rescrapeRange() {
+            const start = parseInt(document.getElementById("startRow").value);
+            const end = parseInt(document.getElementById("endRow").value);
+
+            const res = await fetch("/rescrape_range", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ start_row: start, end_row: end })
+            });
+
+            const data = await res.json();
+            document.getElementById("output").value = JSON.stringify(data, null, 2);
+            refreshJSON();
+        }
+
+        async function scrapeSingle() {
+            const url = document.getElementById("dogURL").value;
+
+            const res = await fetch("/scrape_single", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ url })
+            });
+
+            const data = await res.json();
+            document.getElementById("output").value = JSON.stringify(data, null, 2);
+            refreshJSON();
+        }
+
+        async function openFile(type) {
+            const res = await fetch(`/open_file/${type}`);
+            const msg = await res.text();
+            const output = document.getElementById("output");
+            output.value = `✅ ${msg}\n` + output.value;
+        }
+
+        async function refreshJSON() {
+            try {
+                const res = await fetch("/api/live_dogs");
+                const data = await res.json();
+                const pre = document.getElementById("jsonOutput");
+
+                if (data.status === "ok" && data.count > 0) {
+                    pre.textContent = JSON.stringify(data.dogs, null, 2);
+                    pre.classList.add("updated");
+                    setTimeout(() => pre.classList.remove("updated"), 600);
+                } else {
+                    pre.textContent = "No live data yet...";
+                }
+            } catch (err) {
+                document.getElementById("jsonOutput").textContent = "⚠️ Error fetching live data";
+            }
+        }
+
+        // Auto-refresh every 5 seconds
+        setInterval(refreshJSON, 5000);
+        refreshJSON();
+    </script>
+</body>
+
+</html>
