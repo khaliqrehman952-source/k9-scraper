@@ -86,7 +86,9 @@ You’ll see the **K9 Scraper Control Panel**, where you can:
 - 🔍 Scrape a single dog profile  
 - 📂 Open your data files (CSV, Excel, JSON)  
 - 🧠 View live JSON data from the scraper  
-
+  And
+👉 **http://127.0.0.1:5000/data_dashboard**
+  You’ll see the **K9 Data Dashboard**, where you can see :
 ---
 
 ## 📁 Output Files
@@ -156,7 +158,7 @@ This project is released under the **MIT License** — free to use, modify, and 
 ## 👨‍💻 Author
 
 **Developed by:** *Wajid Khanzada*  
-**GitHub:** [https://github.com/YOUR_USERNAME](https://github.com/YOUR_USERNAME)
+**GitHub:** [https://github.com/khaliqrehman952-source](https://github.com/khaliqrehman952-source)
 
 ---
 
